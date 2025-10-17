@@ -1,0 +1,113 @@
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+
+public class CalculatorApp extends JFrame implements ActionListener {
+
+    private JTextField display;
+    private StringBuilder currentInput;
+    private double num1 = 0, num2 = 0, result = 0;
+    private char operator = ' ';
+
+    public CalculatorApp() {
+        setTitle("Java Swing Calculator");
+        setSize(350, 500);
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setLocationRelativeTo(null);
+        setLayout(new BorderLayout(10, 10));
+
+        currentInput = new StringBuilder();
+
+        // === Display Field ===
+        display = new JTextField();
+        display.setFont(new Font("Segoe UI", Font.BOLD, 24));
+        display.setHorizontalAlignment(JTextField.RIGHT);
+        display.setEditable(false);
+        add(display, BorderLayout.NORTH);
+
+        // === Button Panel ===
+        JPanel buttonPanel = new JPanel(new GridLayout(5, 4, 10, 10));
+        String[] buttons = {
+                "7", "8", "9", "/",
+                "4", "5", "6", "*",
+                "1", "2", "3", "-",
+                "0", ".", "=", "+",
+                "C", "←"
+        };
+
+        for (String text : buttons) {
+            JButton btn = new JButton(text);
+            btn.setFont(new Font("Segoe UI", Font.BOLD, 20));
+            btn.addActionListener(this);
+            buttonPanel.add(btn);
+        }
+
+        add(buttonPanel, BorderLayout.CENTER);
+        setVisible(true);
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        String command = e.getActionCommand();
+
+        if ((command.charAt(0) >= '0' && command.charAt(0) <= '9') || command.equals(".")) {
+            currentInput.append(command);
+            display.setText(currentInput.toString());
+        } else if (command.equals("C")) {
+            clearAll();
+        } else if (command.equals("←")) {
+            if (currentInput.length() > 0) {
+                currentInput.deleteCharAt(currentInput.length() - 1);
+                display.setText(currentInput.toString());
+            }
+        } else if (command.equals("=")) {
+            if (operator != ' ' && currentInput.length() > 0) {
+                num2 = Double.parseDouble(currentInput.toString());
+                calculate();
+                operator = ' ';
+            }
+        } else { // +, -, *, /
+            if (currentInput.length() > 0) {
+                num1 = Double.parseDouble(currentInput.toString());
+                operator = command.charAt(0);
+                currentInput.setLength(0);
+                display.setText("");
+            }
+        }
+    }
+
+    private void calculate() {
+        switch (operator) {
+            case '+':
+                result = num1 + num2;
+                break;
+            case '-':
+                result = num1 - num2;
+                break;
+            case '*':
+                result = num1 * num2;
+                break;
+            case '/':
+                if (num2 == 0) {
+                    display.setText("Error: Divide by 0");
+                    return;
+                }
+                result = num1 / num2;
+                break;
+        }
+        display.setText(String.valueOf(result));
+        currentInput.setLength(0);
+        currentInput.append(result);
+    }
+
+    private void clearAll() {
+        currentInput.setLength(0);
+        num1 = num2 = result = 0;
+        operator = ' ';
+        display.setText("");
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(CalculatorApp::new);
+    }
+}
